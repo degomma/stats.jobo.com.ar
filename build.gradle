@@ -1,0 +1,58 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.3.3'
+	id 'io.spring.dependency-management' version '1.1.6'
+	id "org.sonarqube" version "4.4.1.3373"
+	id 'application'
+}
+
+group = 'com.jobo'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation 'org.apache.httpcomponents.client5:httpclient5:5.1'
+	implementation 'com.google.code.gson:gson:2.8.9'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'io.springfox:springfox-boot-starter:3.0.0'
+	implementation 'io.springfox:springfox-swagger-ui:3.0.0'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+mainClassName = 'com.jobo.stats.StatsApplication'
+
+sonar {
+	properties {
+		property "sonar.projectKey", "degomma_stats.jobo.com.ar"
+		property "sonar.organization", "degomma"
+		property "sonar.host.url", "https://sonarcloud.io/"
+	}
+}
+sonarqube {
+	properties {
+		property "sonar.gradle.skipCompile", "true"
+	}
+}
+
+tasks.named('compileJava') {
+
+}
