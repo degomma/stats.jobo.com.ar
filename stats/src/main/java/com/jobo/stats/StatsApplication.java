@@ -23,9 +23,13 @@ import java.util.Base64;
 @SpringBootApplication
 public class StatsApplication {
 
-
-	private static String accessToken; //variable para guardar token
+	// variable para guardar token
+	private static String accessToken;
 	private static String refreshToken;
+
+	public static String getAccessToken() {
+		return accessToken;
+	}
 
 	public static void main(String[] args) {
 		SpringApplication.run(StatsApplication.class, args);
@@ -38,34 +42,42 @@ public class StatsApplication {
 		public RedirectView login() {
 			String clientId = "b4cda3d2795543e3977998f5d982bfc4";
 			String redirectUri = "http://localhost:8080/callback";
-			String scope = "user-read-private user-read-email";
+			String scope = "user-read-private user-read-email user-top-read";
 			String authUrl = "https://accounts.spotify.com/authorize"
 					+ "?response_type=code"
 					+ "&client_id=" + clientId
 					+ "&redirect_uri=" + redirectUri
 					+ "&scope=" + scope;
-			return new RedirectView(authUrl); // redirigir usuario a spotify
+			return new RedirectView(authUrl);
 		}
+
 
 		@GetMapping("/callback")
 		public RedirectView callback(@RequestParam("code") String code) {
 			try {
-				spotifyAuth(code); // llama al metodo para recibir y guardar toker
+				spotifyAuth(code); // llamada al metodo para obtener token
+
+
+				ApiClient apiClient = new ApiClient();
+				apiClient.fetchTopArtists(10);
+				apiClient.fetchTopSongs(10);
+
 			} catch (IOException | ParseException e) {
 				e.printStackTrace();
 			}
-			return new RedirectView("/"); // redirige a la pagina principal despues de la autenticación
+			return new RedirectView("/");
 		}
+
 
 		@GetMapping("/error")
 		public String errorPage() {
-			return "Error en la solicitud. Inténtalo nuevamente.";
+			return "Error al procesar la solicitud."; // manejo de errores
 		}
 
 		@GetMapping("/sanityCheck")
-		@ResponseBody
+		@ResponseBody // Respuesta como cuerpo directo
 		public String sanityCheck() {
-			return "El servicio anda 100% barrani."; // mensaje de verificación sanity check
+			return "El servicio anda 100% barrani.";
 		}
 
 		// endpoint para verificar el token guardado
@@ -75,14 +87,14 @@ public class StatsApplication {
 			if (accessToken != null) {
 				return "Token: " + accessToken;
 			} else {
-				return "No se guardo el token.";
+				return "No se guardo el token";
 			}
 		}
 	}
 
-	// metodo para manejar auth y guardar token
+	// metodo de la auth y guardar el token
 	public static void spotifyAuth(String code) throws IOException, ParseException {
-		// Credenciales de Spotify
+
 		String clientId = "b4cda3d2795543e3977998f5d982bfc4";
 		String clientSecret = "01b2415dd16b4b54b85980fb4cc7cc73";
 		String redirectUri = "http://localhost:8080/callback";
@@ -91,20 +103,24 @@ public class StatsApplication {
 		String auth = clientId + ":" + clientSecret;
 		String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
 
+
 		CloseableHttpClient httpClient = HttpClients.createDefault();
 		HttpPost post = new HttpPost("https://accounts.spotify.com/api/token");
 		post.setHeader("Authorization", "Basic " + encodedAuth);
 		post.setHeader("Content-Type", "application/x-www-form-urlencoded");
+
 
 		String body = "grant_type=authorization_code"
 				+ "&code=" + code
 				+ "&redirect_uri=" + redirectUri;
 		post.setEntity(new StringEntity(body));
 
+
 		try (CloseableHttpResponse response = httpClient.execute(post)) {
 			int statusCode = response.getCode();
 			String jsonResponse = EntityUtils.toString(response.getEntity());
 
+			// cÃ³digo de estado y respuesta
 			System.out.println("Status Code: " + statusCode);
 			System.out.println("Response: " + jsonResponse);
 
@@ -115,10 +131,10 @@ public class StatsApplication {
 				accessToken = jsonObject.get("access_token").getAsString(); // Guardar el access token
 				refreshToken = jsonObject.has("refresh_token") ? jsonObject.get("refresh_token").getAsString() : null;
 
-				// imprimir el token de acceso
+				// printear token de acceso
 				System.out.println("Token guardado: " + accessToken);
 			} else {
-				// manejar errores
+
 				System.out.println("Error al obtener el token, respuesta: " + jsonResponse);
 			}
 		}
