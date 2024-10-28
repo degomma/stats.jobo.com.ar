@@ -1,6 +1,6 @@
 package com.jobo.stats.client;
 
-import com.jobo.stats.model.Token;  // Import your Token class
+import com.jobo.stats.model.Token;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
@@ -12,11 +12,16 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import java.io.IOException;
 import java.util.Base64;
 
 public class ApiClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(ApiClient.class);
 
     public static void spotifyAuth(String code) throws IOException, ParseException {
         String clientId = "b4cda3d2795543e3977998f5d982bfc4";
@@ -40,8 +45,8 @@ public class ApiClient {
             int statusCode = response.getCode();
             String jsonResponse = EntityUtils.toString(response.getEntity());
 
-            System.out.println("Status Code: " + statusCode);
-            System.out.println("Response: " + jsonResponse);
+            logger.debug("Status Code: {}", statusCode);
+            logger.debug("Response: {}", jsonResponse);
 
             if (statusCode == 200) {
                 Gson gson = new Gson();
@@ -49,9 +54,9 @@ public class ApiClient {
                 Token.setAccessToken(jsonObject.get("access_token").getAsString());
                 Token.setRefreshToken(jsonObject.has("refresh_token") ? jsonObject.get("refresh_token").getAsString() : null);
 
-                System.out.println("Access token saved: " + Token.getAccessToken());
+                logger.debug("Access token saved: {}", Token.getAccessToken());
             } else {
-                System.out.println("Error obtaining token: " + jsonResponse);
+                logger.error("Error obtaining token: {}", jsonResponse);
             }
         }
     }
@@ -67,8 +72,8 @@ public class ApiClient {
                 int statusCode = response.getCode();
                 String jsonResponse = EntityUtils.toString(response.getEntity());
 
-                System.out.println("Status Code: " + statusCode);
-                System.out.println("Response: " + jsonResponse);
+                logger.debug("Status Code: {}", statusCode);
+                logger.debug("Response: {}", jsonResponse);
 
                 if (statusCode == 200) {
                     Gson gson = new Gson();
@@ -81,14 +86,14 @@ public class ApiClient {
                         String name = artist.get("name").getAsString();
 
                         displayedCount++;
-                        System.out.println(displayedCount + ") \"" + name + "\"");
+                        logger.info("{}: \"{}\"", displayedCount, name);
                     }
                 } else {
-                    System.out.println("Error obteniendo top artistas: " + jsonResponse);
+                    logger.error("Error obteniendo top artistas: {}", jsonResponse);
                 }
             }
         } catch (IOException | ParseException e) {
-            e.printStackTrace();
+            logger.error("Exception occurred while fetching top artists", e);
         }
     }
 
@@ -103,8 +108,8 @@ public class ApiClient {
                 int statusCode = response.getCode();
                 String jsonResponse = EntityUtils.toString(response.getEntity());
 
-                System.out.println("Status Code: " + statusCode);
-                System.out.println("Response: " + jsonResponse);
+                logger.debug("Status Code: {}", statusCode);
+                logger.debug("Response: {}", jsonResponse);
 
                 if (statusCode == 200) {
                     Gson gson = new Gson();
@@ -116,14 +121,14 @@ public class ApiClient {
                         String trackName = track.get("name").getAsString();
                         JsonArray artists = track.getAsJsonArray("artists");
                         String artistName = artists.get(0).getAsJsonObject().get("name").getAsString();
-                        System.out.println((i + 1) + ") \"" + trackName + "\" - " + artistName);
+                        logger.info("{}: \"{}\" - {}", (i + 1), trackName, artistName);
                     }
                 } else {
-                    System.out.println("Error obteniendo top canciones: " + jsonResponse);
+                    logger.error("Error obteniendo top canciones: {}", jsonResponse);
                 }
             }
         } catch (IOException | ParseException e) {
-            e.printStackTrace();
+            logger.error("Exception occurred while fetching top songs", e);
         }
     }
 }
