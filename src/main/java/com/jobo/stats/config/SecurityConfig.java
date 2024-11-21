@@ -2,11 +2,12 @@ package com.jobo.stats.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -26,7 +27,8 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .csrf(csrf -> csrf.disable()) // Desactiva CSRF
                 .cors(Customizer.withDefaults()) // Asegura que CORS esté habilitado
                 .exceptionHandling(exceptions ->
-                        exceptions.authenticationEntryPoint(new Http403ForbiddenEntryPoint()) // Manejo de errores 403
+                        // Reemplazamos Http403ForbiddenEntryPoint por HttpStatusEntryPoint
+                        exceptions.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)) // Devuelve 401 Unauthorized
                 );
 
         return http.build();  // Usar http.build() en lugar de .and()

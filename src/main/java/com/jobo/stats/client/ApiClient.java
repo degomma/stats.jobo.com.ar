@@ -15,8 +15,9 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Base64;
 
 public class ApiClient {
@@ -61,8 +62,9 @@ public class ApiClient {
         }
     }
 
-    public static void fetchTopArtists(int limit) {
+    public static List<String> fetchTopArtists(int limit) {
         String accessToken = Token.getAccessToken();
+        List<String> topArtists = new ArrayList<>();
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpGet getRequest = new HttpGet("https://api.spotify.com/v1/me/top/artists?time_range=long_term&limit=" + limit);
@@ -80,13 +82,10 @@ public class ApiClient {
                     JsonObject jsonObject = gson.fromJson(jsonResponse, JsonObject.class);
                     JsonArray items = jsonObject.getAsJsonArray("items");
 
-                    int displayedCount = 0;
                     for (int i = 0; i < items.size(); i++) {
                         JsonObject artist = items.get(i).getAsJsonObject();
                         String name = artist.get("name").getAsString();
-
-                        displayedCount++;
-                        logger.info("{}: \"{}\"", displayedCount, name);
+                        topArtists.add(name);
                     }
                 } else {
                     logger.error("Error obteniendo top artistas: {}", jsonResponse);
@@ -95,10 +94,13 @@ public class ApiClient {
         } catch (IOException | ParseException e) {
             logger.error("Exception occurred while fetching top artists", e);
         }
+
+        return topArtists;
     }
 
-    public static void fetchTopSongs(int limit) {
+    public static List<String> fetchTopSongs(int limit) {
         String accessToken = Token.getAccessToken();
+        List<String> topSongs = new ArrayList<>();
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpGet getRequest = new HttpGet("https://api.spotify.com/v1/me/top/tracks?time_range=long_term&limit=" + limit);
@@ -121,7 +123,7 @@ public class ApiClient {
                         String trackName = track.get("name").getAsString();
                         JsonArray artists = track.getAsJsonArray("artists");
                         String artistName = artists.get(0).getAsJsonObject().get("name").getAsString();
-                        logger.info("{}: \"{}\" - {}", (i + 1), trackName, artistName);
+                        topSongs.add(trackName + " - " + artistName);
                     }
                 } else {
                     logger.error("Error obteniendo top canciones: {}", jsonResponse);
@@ -130,5 +132,7 @@ public class ApiClient {
         } catch (IOException | ParseException e) {
             logger.error("Exception occurred while fetching top songs", e);
         }
+
+        return topSongs;
     }
 }
