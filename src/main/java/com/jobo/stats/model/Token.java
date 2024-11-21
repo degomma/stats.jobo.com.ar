@@ -1,6 +1,7 @@
 package com.jobo.stats.model;
 
 public class Token {
+    public static String getAccessToken;
     private static String accessToken; // Make this static
     private static String refreshToken; // Make this static
 

@@ -35,6 +35,11 @@ dependencies {
 	testImplementation 'org.mockito:mockito-core:4.0.0'
 	testImplementation 'org.mockito:mockito-junit-jupiter:4.0.0'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'jakarta.servlet:jakarta.servlet-api:5.0.0'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+
 }
 
 tasks.named('test') {
